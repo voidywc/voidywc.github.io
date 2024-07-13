@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Hexo</title>
+    <title> | Hexo</title>
     <meta name="author" content="John Doe" />
     <meta name="description" content="" />
     <meta name="keywords" content="" />
@@ -42,7 +42,9 @@
 
 
 
-<script src="/js/lib/home.js"></script>
+
+
+
 
 <link rel="stylesheet" href="/css/main.css" />
 
@@ -152,40 +154,11 @@
 </transition>
 
         <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
-            <div id="home-head">
-    <div
-        id="home-background"
-        ref="homeBackground"
-        data-images="/images/background.jpg"
-    ></div>
-    <div id="home-info" @click="homeClick">
-        <span class="loop"></span>
-        <span class="loop"></span>
-        <span class="loop"></span>
-        <span class="loop"></span>
-        <span class="info">
-            <div class="wrap">
-                <h1>Hexo</h1>
-                <h3></h3>
-                <h5></h5>
-            </div>
-        </span>
+            <div class="article">
+    <div>
+        <h1></h1>
     </div>
-</div>
-<div
-    id="home-posts-wrap"
-    ref="homePostsWrap"
-    true
->
-    <div id="home-posts">
-        
-
-<div class="post">
-    <a href="/2024/07/11/acm1/">
-        <h2 class="post-title"></h2>
-    </a>
-    <div class="category-and-date">
-        
+    <div class="info">
         <span class="date">
             <span class="icon">
                 <i class="fa-solid fa-calendar fa-fw"></i>
@@ -195,10 +168,9 @@
         
         
     </div>
-    <div class="description">
-        <div class="content" v-pre>
-            
-            <h1 id="容斥原理小结1-—数论篇"><a href="#容斥原理小结1-—数论篇" class="headerlink" title="容斥原理小结1 —数论篇"></a>容斥原理小结1 —数论篇</h1><h2 id="容斥原理运用"><a href="#容斥原理运用" class="headerlink" title="容斥原理运用"></a>容斥原理运用</h2><p>容斥原理可以抽象出两类：</p>
+    
+    <div class="content" v-pre>
+        <h1 id="容斥原理小结1-—数论篇"><a href="#容斥原理小结1-—数论篇" class="headerlink" title="容斥原理小结1 —数论篇"></a>容斥原理小结1 —数论篇</h1><h2 id="容斥原理运用"><a href="#容斥原理运用" class="headerlink" title="容斥原理运用"></a>容斥原理运用</h2><p>容斥原理可以抽象出两类：</p>
 <ol>
 <li>在有n个限制条件的情况下， 选出k（k &lt;&#x3D; n）个限制条件。根据选出限制条件的奇偶性来对答案进行加减，如：<br><code> if (k ^ 1) ans += res;  else ans -= res;</code></li>
 <li>当需要求一个数以及它的因数的影响的时候（如gcd），可以先处理出一个数的倍数， 减去这些贡献再算这个数本身的贡献。类似dp思想，我们可以从大到小枚举，这样大数都已被处理，直接减去即可</li>
@@ -319,54 +291,13 @@ int main() &#123;
 &#125;
 </code></pre>
 
-            
-        </div>
-    </div>
-    <div class="post-tags">
-        
-        
-        
-    </div>
-    <a href="/2024/07/11/acm1/" class="go-post">阅读全文</a>
-</div>
-
-
-        <div class="page-current">
-    
-    <span class="current">1</span>
-    
-    
-    
-    
-</div>
-
     </div>
     
-    <div id="home-card">
-        <div id="card-style">
-    <div id="card-div">
-        <div class="avatar">
-            <img src="/images/avatar.jpg" alt="avatar" />
-        </div>
-        <div class="name">John Doe</div>
-        <div class="description">
-            <p>Description<br>…</p>
-
-        </div>
-        
-        
-        <div class="friend-links">
-            
-            <div class="friend-link">
-                <a target="_blank" rel="noopener" href="https://argvchs.github.io">Argvchs</a>
-            </div>
-            
-        </div>
-        
-    </div>
-</div>
-
-    </div>
+    
+    
+    
+    
+    
     
 </div>
 
@@ -398,6 +329,12 @@ int main() &#123;
         
     </div>
     <script src="/js/main.js"></script>
+    
+    
+
+
+
+
     
 </body>
 </html>
