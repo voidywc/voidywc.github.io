@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Archives | Konnyaku</title>
+    <title> | Konnyaku</title>
     <meta name="author" content="voidywc" />
     <meta name="description" content="" />
     <meta name="keywords" content="" />
@@ -37,6 +37,10 @@
 
 
 <script src="/js/lib/preview.js"></script>
+
+
+
+
 
 
 
@@ -262,40 +266,164 @@ mjx-container[display="true"] + br {
 </transition>
 
         <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
-            
-<div id="archives">
-    
-    <div id="timeline-wrap" ref="timeline">
+            <div class="article">
+    <div>
+        <h1></h1>
+    </div>
+    <div class="info">
+        <span class="date">
+            <span class="icon">
+                <i class="fa-solid fa-calendar fa-fw"></i>
+            </span>
+            2024/7/17
+        </span>
         
-        <div class="timeline" data-title="算法整理——dsuontree">
-            <div class="timeline-tail"></div>
-            <div class="timeline-content">
-                <div class="item-time">2024/7/14</div>
-                <a href="/2024/07/14/DSU%20on%20tree/">
-                    <h3>算法整理 —— Dsu on tree</h3>
-                </a>
-                <div class="info">
-                    
-                    
-                </div>
-            </div>
-        </div>
-        
-        <div class="timeline" data-title="">
-            <div class="timeline-tail"></div>
-            <div class="timeline-content">
-                <div class="item-time">2024/7/17</div>
-                <a href="/2024/07/17/%E5%AE%B9%E6%96%A5%E5%8E%9F%E7%90%86%EF%BC%88%E6%95%B0%E8%AE%BA%EF%BC%89/">
-                    <h3></h3>
-                </a>
-                <div class="info">
-                    
-                    
-                </div>
-            </div>
-        </div>
         
     </div>
+    
+    <div class="content" v-pre>
+        <h1 id="容斥原理小结1----数论篇">容斥原理小结1 ---数论篇</h1>
+<h2 id="容斥原理运用">容斥原理运用</h2>
+<p>容斥原理可以抽象出两类：<br>
+1. 在有n个限制条件的情况下， 选出k（k &lt;=
+n）个限制条件。根据选出限制条件的奇偶性来对答案进行加减，如：<br>
+<code>if (k ^ 1) ans += res;     else ans -= res;</code><br>
+2.
+当需要求一个数以及它的因数的影响的时候（如gcd），可以先处理出一个数的倍数，
+减去这些贡献再算这个数本身的贡献。类似dp思想，我们可以从大到小枚举，这样大数都已被处理，直接减去即可</p>
+<h2 id="例题总结">例题总结</h2>
+<h3 id="最大公约数">最大公约数</h3>
+<p>给定一个序列a[1..n]，现在要从中选择一个非空子集，显然有2<sup>n</sup>
+- 1种选法。<br>
+求有多少个非空子集的数字的最大公约数为1。</p>
+<h3 id="input">input:</h3>
+<p>第一行包含一个正整数n(1≤n≤10<sup>5</sup>)。<br>
+第二行包含n个正整数a[1],a[2],...,a[n] (1≤a[i]≤10<sup>6</sup>)。</p>
+<h3 id="output">output:</h3>
+<p>输出一行一个整数，即答案对1e9 + 7取模的结果。</p>
+<p>这里提供两种解法<br>
+- 思路1<br>
+这也是我的赛时思路。首先题目要求的是gcd不为1，也就是说不用考虑gcd到底是多少。那么我们可以筛出因子进行计算。<mark>把每个因子看做一个限制条件</mark>，当筛出偶数个因子的时候我们需要从答案中加上贡献，反之为奇数时要减去贡献。（可以思考选出因子1的时候。这样是0个限制条件，而有因子1的数是全体n个数，此时有2<sup>n</sup>
+- 1种取法。ans显然是要加上这些贡献的）</p>
+<pre><code>可以举个简单的例子，求100以内是3的倍数或者是5的倍数的个数，显然
+`ans = 100 / 3 + 100 / 5 - 100 / 15;`
+
+可以简单模拟一下，现在有6， 12这两个数，~~瞪眼法~~仔细思考可得答案为0。当筛因子1的时候选出两个数， 此时`ans = 3`；同理筛出 2，3 的时候要减去贡献，`ans = ans - 6`，此时`ans = -3`；其实你会发现6和12的gcd为6，但是他们被2和3都筛了一次。当筛因子6时，由于6有因子2， 3因此`ans += qpow(2, 2) - 1;`此时`ans = 0`与我们得出的答案一致
+
+这里还有一个细节，由于4 = 2^2^，被4筛其实和被2筛的性质是一样的，因此可以打上标记避免重复算
+
+赛时代码：</code></pre>
+<pre class="cpp"><code>#include&lt;bits/stdc++.h&gt;
+using namespace std;
+#define endl '\n'
+#define X first
+#define Y second
+#define umap unordered_map
+using ll = long long;
+using ull = unsigned long long;
+typedef pair&lt;int, int&gt; pii;
+typedef pair&lt;ll, ll&gt; pll;
+const int maxn = 2e6 + 5, mod = 1e9 + 7, maxp = 31, inf = 1e9;
+const ll INF = 1e18;
+const double eps = 1e-6;
+
+bool isprime[maxn];
+int prime[maxn];//从1开始
+int ctt;
+
+int phi[maxn];
+
+void eulur(int x) {//这里直接拉的板子，和欧拉函数放一起了
+    phi[1] = 1;
+    for (int i = 2; i &lt;= x; i++) isprime[i] = 1;
+    for (int i = 2; i &lt;= x; i++) {
+        if (isprime[i]) prime[++ctt] = i, phi[i] = i - 1;
+        for (int j = 1; j &lt;= ctt &amp;&amp; i * prime[j] &lt;= x; j++) {
+            isprime[i * prime[j]] = 0;
+            if (i % prime[j] == 0) {
+                phi[i * prime[j]] = phi[i] * prime[j];
+                break;
+            }
+            else {
+                phi[i * prime[j]] = phi[i] * (prime[j] - 1);
+            }
+        } 
+    }
+}
+
+ll fastpow(ll a, ll n) {
+    ll res = 1;
+    a %= mod;
+    while (n) {
+        if (n &amp; 1) res = res * a % mod;
+        a = a * a % mod;
+        n &gt;&gt;= 1;
+    }
+    return res;
+}
+
+void solve() {
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;int&gt; a(n + 1);
+    for (int i = 1; i &lt;= n; i++) {
+        cin &gt;&gt; a[i];
+    }
+    eulur(1e6 + 5);
+    sort(a.begin(), a.end());
+    ll ans = fastpow(2, n);//这里把1单独拿出来算了，当时想的是反着做
+    ans = (ans - 1 + mod) % mod;
+    const int m = a[n];//求出上限
+    //下面是预处理 被因子x筛出的其实就是x的所有倍数
+    //先把每个数有多少给记录在cnt数组里，再把一个数的因子个数记录在ct数组里
+    vector&lt;int&gt; ct(m + 1), cnt(m + 1);
+    vector&lt;int&gt; vis(m + 1);
+    for (int i = 1; i &lt;= ctt; i++) {//这里是调和奇数，时间复杂度O(nlogn)
+        int p = prime[i];
+        for (int j = p; j &lt;= m; j += p) {
+            ct[j]++;
+            if (j % (p * p) == 0) vis[j] = 1;//给一个数的平方数打上标记
+        }
+    }
+    
+    for (int i = 1; i &lt;= n; i++) {
+        int x = a[i];
+        for (int j = 1; j * j &lt;= x; j++) {
+            if (x % j) continue;
+            cnt[j]++;
+            if (x / j != j) cnt[x / j]++;
+        }
+    }
+    
+    for (int i = 2; i &lt;= m; i++) {
+        if (vis[i]) continue;//打上标记就跳过
+        int f = 1;
+        if (ct[i] % 2) f = -1;
+        //f来表示对答案的贡献是加还是减
+        ans += f * (fastpow(2, cnt[i]) - 1);
+        ans = (ans + mod) % mod;
+    }
+    cout &lt;&lt; ans &lt;&lt; endl;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+    int tt = 1;
+    // cin &gt;&gt; tt;
+    while (tt--) solve();
+    return 0;
+}</code></pre>
+
+    </div>
+    
+    
+    
+    
+    
+    
+    
 </div>
 
             <footer id="footer">
@@ -326,6 +454,12 @@ mjx-container[display="true"] + br {
         
     </div>
     <script src="/js/main.js"></script>
+    
+    
+
+
+
+
     
 </body>
 </html>
