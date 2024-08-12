@@ -335,135 +335,139 @@ mjx-container[display="true"] + br {
 1)维度的），那么递推肯定是不好推的，因为我现在还没有求得下一维度的方案数，我根本就没法得到下一个维度的前缀和。说到这里就很有感触了，那就是把前缀和降一个维度！这样一个矩阵里面存的是这个维度的方案数和上一个维度的前缀和，而上一维度的前缀和+这一维度的方案是就是这一维度的前缀和，也就是下一矩阵中的前缀和！</p>
 <p>注意矩阵的初始化就AC了（</p>
 <h2 id="code">code</h2>
-<p>```cpp<br>
-#include&lt;bits/stdc++.h&gt;<br>
-using namespace std;<br>
-#define endl ''<br>
-using ll = long long;<br>
-const int mod = 1e9 + 7;</p>
-<p>struct matrix {<br>
-vector&lt;vector<ll>&gt; t;<br>
-int n, m;</ll></p>
-<pre><code>matrix(int _n, int _m) {
-    n = _n, m = _m;
-    t.resize(n + 1);
-    for (int i = 1; i &lt;= n; i++) {
-        t[i].resize(m + 1);
-    }
-}
+<pre class="cpp"><code>#include&lt;bits/stdc++.h&gt;
+using namespace std;
+#define endl '\n'
+using ll = long long;
+const int mod = 1e9 + 7;
 
-matrix operator *(const matrix &amp;a) const {
-    matrix res(n, a.m);
-    for (int i = 1; i &lt;= res.n; i++) {
-        for (int j = 1; j &lt;= res.m; j++) {
-            for (int k = 1; k &lt;= m; k++) {
-                res.t[i][j] += t[i][k] * a.t[k][j];
-                res.t[i][j] %= mod;
+struct matrix {
+    vector&lt;vector&lt;ll&gt;&gt; t;
+    int n, m;
+
+    matrix(int _n, int _m) {
+        n = _n, m = _m;
+        t.resize(n + 1);
+        for (int i = 1; i &lt;= n; i++) {
+            t[i].resize(m + 1);
+        }
+    }
+
+    matrix operator *(const matrix &amp;a) const {
+        matrix res(n, a.m);
+        for (int i = 1; i &lt;= res.n; i++) {
+            for (int j = 1; j &lt;= res.m; j++) {
+                for (int k = 1; k &lt;= m; k++) {
+                    res.t[i][j] += t[i][k] * a.t[k][j];
+                    res.t[i][j] %= mod;
+                }
             }
         }
+        return res;
     }
-    return res;
+
+    matrix m_qpow(ll k) {
+        matrix res(n, n);
+        auto A = *this;
+        for (int i = 1; i &lt;= n; i++) {
+            res.t[i][i] = 1;
+        }
+        while (k) {
+            if (k &amp; 1) {
+                res = res * A;
+            }
+            A = A * A;
+            k &gt;&gt;= 1;
+        }
+        return res;
+    }
+};
+
+void solve() {
+    int n, m;
+    ll L, R;
+    cin &gt;&gt; n &gt;&gt; m &gt;&gt; L &gt;&gt; R;
+    vector&lt;vector&lt;ll&gt;&gt; ed(n + 1, vector&lt;ll&gt;(n + 1)), W(n + 1, vector&lt;ll&gt;(n + 1)), dp(n + 1, vector&lt;ll&gt;(n + 1));
+    vector&lt;bool&gt; vis(n + 1);
+    for (int i = 1; i &lt;= m; i++) {
+        int u, v, w;
+        cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;
+        if (v &lt;= n) {
+            ed[u][v] = w;
+        }
+        else {
+            W[u][v - n] = w;
+        }
+        // 分别记录，这样好处理出D和Q矩阵
+    }
+
+    auto dfs = [&amp;](auto self, int u) -&gt; void {
+        if (vis[u]) return;
+        vis[u] = true;
+        dp[u][u] = 1;
+        for (int v = u + 1; v &lt;= n; v++) {
+            for (int k = u + 1; k &lt;= v; k++) {
+                self(self, k);
+                dp[u][v] = (dp[u][v] + 1ll * ed[u][k] * dp[k][v] % mod) % mod;
+            } 
+        }
+    };
+
+    for (int i = 1; i &lt;= n; i++) {
+        dfs(dfs, i);
+        // 预处理D矩阵
+    }
+
+    auto get = [&amp;](ll x) -&gt; ll {
+        ll k = x / n;
+        // 这里要注意因为矩阵是n个一推的，所以要留下x % n个直接加
+        matrix D(n + 1, n + 1);
+        for (int i = 1; i &lt;= n; i++) {
+            for (int j = 1; j &lt;= n; j++) {
+                D.t[i][j] = dp[i][j];
+            }
+        }
+
+        D.t[n + 1][n + 1] = 1;
+
+        matrix Q(n + 1, n + 1);
+        for (int i = 1; i &lt;= n; i++) {
+            for (int j = 1; j &lt;= n; j++) {
+                Q.t[i][j] = W[i][j];
+            }
+        }
+        for (int i = 1; i &lt;= n + 1; i++) {
+            Q.t[i][n + 1] = 1;
+            // 给第n + 1维赋值，好直接处理出A的前缀和列（第n + 1列）
+        }
+
+        auto A = D * Q;
+        auto res = A.m_qpow(k);
+        ll ans = res.t[1][n + 1];
+        res = res * D;
+        // *A实际上是*D*Q，即先自己内部计算然后再递推到下一个，这里算剩下的不需要递推到下一个，所以只要*D即可
+        for (int i = 1; i &lt;= x % n; i++) {
+            ans = (ans + res.t[1][i]) % mod;
+        }
+        return ans;
+    };
+
+    ll ans = get(R) - get(L - 1);
+    // 前缀和相减得到区间和
+    ans = (ans + mod) % mod;
+    cout &lt;&lt; ans &lt;&lt; endl;
 }
 
-matrix m_qpow(ll k) {
-    matrix res(n, n);
-    auto A = *this;
-    for (int i = 1; i &lt;= n; i++) {
-        res.t[i][i] = 1;
-    }
-    while (k) {
-        if (k &amp; 1) {
-            res = res * A;
-        }
-        A = A * A;
-        k &gt;&gt;= 1;
-    }
-    return res;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+    int tt = 1;
+    cin &gt;&gt; tt;
+    while (tt--) solve();
+    return 0;
 }</code></pre>
-<p>};</p>
-<p>void solve() {<br>
-int n, m;<br>
-ll L, R;<br>
-cin &gt;&gt; n &gt;&gt; m &gt;&gt; L &gt;&gt; R;<br>
-vector&lt;vector<ll>&gt; ed(n + 1, vector<ll>(n + 1)), W(n + 1,
-vector<ll>(n + 1)), dp(n + 1, vector<ll>(n + 1));<br>
-vector<bool> vis(n + 1);<br>
-for (int i = 1; i &lt;= m; i++) {<br>
-int u, v, w;<br>
-cin &gt;&gt; u &gt;&gt; v &gt;&gt; w;<br>
-if (v &lt;= n) {<br>
-ed[u][v] = w;<br>
-}<br>
-else {<br>
-W[u][v - n] = w;<br>
-}<br>
-// 分别记录，这样好处理出D和Q矩阵<br>
-}</bool></ll></ll></ll></ll></p>
-<pre><code>auto dfs = [&amp;](auto self, int u) -&gt; void {
-    if (vis[u]) return;
-    vis[u] = true;
-    dp[u][u] = 1;
-    for (int v = u + 1; v &lt;= n; v++) {
-        for (int k = u + 1; k &lt;= v; k++) {
-            self(self, k);
-            dp[u][v] = (dp[u][v] + 1ll * ed[u][k] * dp[k][v] % mod) % mod;
-        } 
-    }
-};
-
-for (int i = 1; i &lt;= n; i++) {
-    dfs(dfs, i);
-    // 预处理D矩阵
-}
-
-auto get = [&amp;](ll x) -&gt; ll {
-    ll k = x / n;
-    // 这里要注意因为矩阵是n个一推的，所以要留下x % n个直接加
-    matrix D(n + 1, n + 1);
-    for (int i = 1; i &lt;= n; i++) {
-        for (int j = 1; j &lt;= n; j++) {
-            D.t[i][j] = dp[i][j];
-        }
-    }
-
-    D.t[n + 1][n + 1] = 1;
-
-    matrix Q(n + 1, n + 1);
-    for (int i = 1; i &lt;= n; i++) {
-        for (int j = 1; j &lt;= n; j++) {
-            Q.t[i][j] = W[i][j];
-        }
-    }
-    for (int i = 1; i &lt;= n + 1; i++) {
-        Q.t[i][n + 1] = 1;
-        // 给第n + 1维赋值，好直接处理出A的前缀和列（第n + 1列）
-    }
-
-    auto A = D * Q;
-    auto res = A.m_qpow(k);
-    ll ans = res.t[1][n + 1];
-    res = res * D;
-    // *A实际上是*D*Q，即先自己内部计算然后再递推到下一个，这里算剩下的不需要递推到下一个，所以只要*D即可
-    for (int i = 1; i &lt;= x % n; i++) {
-        ans = (ans + res.t[1][i]) % mod;
-    }
-    return ans;
-};
-
-ll ans = get(R) - get(L - 1);
-// 前缀和相减得到区间和
-ans = (ans + mod) % mod;
-cout &lt;&lt; ans &lt;&lt; endl;</code></pre>
-<p>}</p>
-<p>int main() {<br>
-ios::sync_with_stdio(false);<br>
-cin.tie(0);<br>
-cout.tie(0);<br>
-int tt = 1;<br>
-cin &gt;&gt; tt;<br>
-while (tt--) solve();<br>
-return 0;<br>
-}</p>
 
             
         </div>
